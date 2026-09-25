@@ -1,0 +1,2485 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DND Everyday — Backend Architecture & API Developer Portal</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='14' fill='%230f172a' stroke='%236366f1' stroke-width='2'/%3E%3Cpath d='M14 15C14 13.9 14.9 13 16 13H24C30.1 13 35 17.9 35 24C35 30.1 30.1 35 24 35H16C14.9 35 14 34.1 14 33V15Z' stroke='white' stroke-width='3.5' fill='none'/%3E%3Cpath d='M22 19L28 24L22 29' stroke='%2338bdf8' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+      };
+    </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+      :root {
+        --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+        --font-mono: "JetBrains Mono", monospace;
+      }
+
+      * {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      pre,
+      code {
+        font-family: var(--font-mono);
+      }
+
+      /* Modern Glassmorphic Cards */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .glass-card:hover {
+        border-color: rgba(99, 102, 241, 0.35);
+        box-shadow: 0 12px 28px -4px rgba(99, 102, 241, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+      }
+
+      .dark-glass {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(51, 65, 85, 0.55);
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Vibrant Gradient Accents */
+      .gradient-text {
+        background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #0a0f1d 0%, #1e1b4b 50%, #171738 100%);
+      }
+
+      /* Colorful Glowing Method Badges */
+      .badge-get {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.1));
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+      .badge-post {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.1));
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+      .badge-put {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.1));
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+      .badge-delete {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(225, 29, 72, 0.1));
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      /* Custom Range Slider */
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+        height: 8px;
+        border-radius: 9999px;
+        outline: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 3px solid #6366f1;
+        box-shadow: 0 0 14px rgba(99, 102, 241, 0.7);
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.95);
+      }
+      input[type="range"]::-webkit-slider-thumb:active {
+        transform: scale(1.05);
+      }
+
+      /* Custom Sleek Scrollbar */
+      ::-webkit-scrollbar {
+        width: 7px;
+        height: 7px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Dark mode styles */
+      html.dark {
+        color-scheme: dark;
+      }
+      html.dark body {
+        background-color: #070b14 !important;
+        color: #f1f5f9 !important;
+      }
+      html.dark ::-webkit-scrollbar-thumb {
+        background: #334155;
+      }
+      html.dark ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+      html.dark .glass-card {
+        background: rgba(15, 23, 42, 0.75) !important;
+        border: 1px solid rgba(51, 65, 85, 0.55) !important;
+        color: #f1f5f9 !important;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+      }
+      html.dark .glass-card:hover {
+        border-color: rgba(99, 102, 241, 0.5) !important;
+        box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.15);
+      }
+      html.dark .text-slate-900 {
+        color: #f8fafc !important;
+      }
+      html.dark .text-slate-800 {
+        color: #f1f5f9 !important;
+      }
+      html.dark .text-slate-700 {
+        color: #e2e8f0 !important;
+      }
+      html.dark .text-slate-600 {
+        color: #94a3b8 !important;
+      }
+      html.dark .text-slate-500 {
+        color: #64748b !important;
+      }
+      html.dark .border-slate-200 {
+        border-color: #334155 !important;
+      }
+      html.dark .border-slate-300 {
+        border-color: #475569 !important;
+      }
+      html.dark .bg-slate-50 {
+        background-color: #070b14 !important;
+      }
+      html.dark .bg-slate-100 {
+        background-color: #1e293b !important;
+        color: #e2e8f0 !important;
+      }
+      html.dark .bg-slate-200 {
+        background-color: #334155 !important;
+        color: #cbd5e1 !important;
+      }
+      html.dark .bg-white {
+        background-color: #0f172a !important;
+      }
+      html.dark #api-search {
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+      }
+      html.dark .badge-get {
+        background: rgba(16, 185, 129, 0.18) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+      }
+      html.dark .badge-post {
+        background: rgba(59, 130, 246, 0.18) !important;
+        color: #60a5fa !important;
+        border: 1px solid rgba(96, 165, 250, 0.4) !important;
+      }
+      html.dark .badge-put {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+      }
+      html.dark .badge-delete {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.4) !important;
+      }
+      html.dark .bg-blue-50 {
+        background-color: rgba(30, 58, 138, 0.25) !important;
+        border-color: rgba(59, 130, 246, 0.35) !important;
+      }
+      html.dark .bg-amber-50 {
+        background-color: rgba(120, 53, 15, 0.25) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+      }
+      html.dark .bg-emerald-50 {
+        background-color: rgba(6, 78, 59, 0.25) !important;
+        border-color: rgba(16, 185, 129, 0.35) !important;
+      }
+      html.dark .bg-purple-50 {
+        background-color: rgba(88, 28, 135, 0.25) !important;
+        border-color: rgba(168, 85, 247, 0.35) !important;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+    <!-- TOP HERO HEADER -->
+    <header
+      class="gradient-bg text-white relative overflow-hidden shadow-xl border-b border-indigo-900/40"
+    >
+      <div
+        class="absolute -right-20 -top-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"
+      ></div>
+      <div
+        class="absolute left-1/3 -bottom-20 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl pointer-events-none"
+      ></div>
+
+      <div class="max-w-7xl mx-auto px-6 py-12 relative z-10">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+        >
+          <div class="flex items-start sm:items-center gap-4">
+            <!-- DND Everyday Brand Logo Mark -->
+            <div class="relative shrink-0 group">
+              <div class="absolute -inset-1 bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-600 rounded-2xl blur-md opacity-75 group-hover:opacity-100 transition duration-300"></div>
+              <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-[#0c1222] via-[#141b36] to-[#1e1b4b] border border-white/20 p-2.5 shadow-2xl flex items-center justify-center">
+                <svg class="w-full h-full" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="heroLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#38bdf8"/>
+                      <stop offset="50%" stop-color="#818cf8"/>
+                      <stop offset="100%" stop-color="#c084fc"/>
+                    </linearGradient>
+                    <linearGradient id="heroSpeed" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#22d3ee"/>
+                      <stop offset="100%" stop-color="#a855f7"/>
+                    </linearGradient>
+                  </defs>
+                  <!-- Stylized 'D' monogram with forward delivery geometry -->
+                  <path d="M12 11C12 9.89543 12.8954 9 14 9H22C28.6274 9 34 14.3726 34 21C34 27.6274 28.6274 33 22 33H14C12.8954 33 12 32.1046 12 31V11Z" stroke="url(#heroLogoGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- Inner forward velocity chevron -->
+                  <path d="M19 16L25 21L19 26" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- GPS Pulsing beacon dot -->
+                  <circle cx="21" cy="21" r="2" fill="#38bdf8"/>
+                  <path d="M10 21H13" stroke="url(#heroSpeed)" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-2.5 mb-2">
+                <span
+                  class="px-3 py-0.5 rounded-full text-xs font-semibold tracking-wide bg-blue-500/30 text-blue-200 border border-blue-400/30 flex items-center gap-1.5"
+                >
+                  <span
+                    class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+                  ></span>
+                  HYPERLOCAL PLATFORM ENGINE
+                </span>
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/30 text-purple-200 border border-purple-400/30 font-mono"
+                  >v1.0.0-PROD</span
+                >
+              </div>
+
+              <h1
+                class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white flex items-center gap-3"
+              >
+                <span>DND Everyday</span>
+                <span class="text-blue-300 font-light text-2xl sm:text-3xl hidden md:inline"
+                  >| Developer Portal</span
+                >
+              </h1>
+              <p class="mt-1.5 text-slate-300 max-w-2xl text-sm sm:text-base leading-relaxed">
+                Enterprise backend architecture, complete REST & WebSocket API
+                catalog, state machines, double-entry financial ledger, and
+                PostGIS geospatial routing engine.
+              </p>
+            </div>
+          </div>
+
+          <!-- System Tech Badges -->
+          <div
+            class="flex flex-wrap md:flex-col gap-2.5 bg-slate-900/60 p-4 rounded-2xl border border-slate-700/60 backdrop-blur-md shrink-0"
+          >
+            <div class="flex items-center gap-2 text-xs text-slate-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <span class="font-mono font-medium text-white"
+                >Node.js 20+ LTS + Express 4</span
+              >
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+              <span class="font-mono font-medium text-white"
+                >PostgreSQL 16 + PostGIS</span
+              >
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+              <span class="font-mono font-medium text-white"
+                >Redis 7 (Locks, Cache, PubSub)</span
+              >
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-300">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <span class="font-mono font-medium text-white"
+                >Socket.IO Real-Time Gateway</span
+              >
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- STICKY FLOATING SUB-NAV BAR -->
+    <nav class="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-[#070b14]/85 border-b border-slate-200/80 dark:border-slate-800/80 transition-all duration-300 py-2.5 shadow-sm px-6">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4 overflow-x-auto">
+        <div class="flex items-center gap-2 text-xs font-semibold shrink-0">
+          <!-- Navbar Logo Brand -->
+          <a href="#" class="flex items-center gap-2 mr-3 group shrink-0">
+            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-1 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
+              <svg class="w-full h-full text-white" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 11C12 9.89543 12.8954 9 14 9H22C28.6274 9 34 14.3726 34 21C34 27.6274 28.6274 33 22 33H14C12.8954 33 12 32.1046 12 31V11Z" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19 16L25 21L19 26" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span class="font-extrabold text-sm tracking-tight text-slate-900 dark:text-white hidden sm:inline">
+              DND<span class="text-indigo-600 dark:text-indigo-400 font-normal">Everyday</span>
+            </span>
+          </a>
+          <a
+            href="#architecture"
+            class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 dark:hover:text-indigo-400 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
+          >
+            <span>🏛️</span> Architecture
+          </a>
+          <a
+            href="#calculator"
+            class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 dark:hover:text-indigo-400 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
+          >
+            <span>⚡</span> Distance Calculator
+          </a>
+          <a
+            href="#workflows"
+            class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 dark:hover:text-indigo-400 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
+          >
+            <span>🔄</span> State Machine
+          </a>
+          <a
+            href="#api-reference"
+            class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 transition flex items-center gap-1.5 font-bold"
+          >
+            <span>📡</span> API Reference (34)
+          </a>
+          <a
+            href="#quickstart"
+            class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 dark:hover:text-indigo-400 text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5"
+          >
+            <span>🚀</span> Quickstart & Setup
+          </a>
+        </div>
+        <div class="hidden md:flex items-center gap-2 text-[11px] font-mono text-slate-500 dark:text-slate-400 shrink-0">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>PostGIS Spatial Engine &bull; Zero-Docker Ready</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-12">
+      <!-- SECTION 1: ARCHITECTURE HIGHLIGHTS -->
+      <section id="architecture" class="space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <span
+              class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400"
+              >Foundation</span
+            >
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              Ecosystem Architecture & Invariants
+            </h2>
+          </div>
+          <span
+            class="text-xs bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 px-3 py-1 rounded-full font-mono font-medium"
+            >7 km Hyperlocal Geofence Radius</span
+          >
+        </div>
+
+        <!-- High-Resolution Architecture Diagram Showcase -->
+        <div class="glass-card rounded-2xl md:rounded-3xl p-5 sm:p-7 border border-slate-200/80 dark:border-slate-800/80 shadow-md transition hover:shadow-xl space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                  SYSTEM BLUEPRINT
+                </span>
+                <span class="text-xs text-slate-500 dark:text-slate-400">&bull; Modular Monolith & Distributed Services</span>
+              </div>
+              <h3 class="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-1">
+                End-to-End Enterprise Architecture Topology
+              </h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">Click image to inspect</span>
+              <button
+                onclick="openImageModal('./assets/system_architecture.jpg', 'DND Everyday Enterprise System Architecture Topology')"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <span>🔍</span> Full View
+              </button>
+            </div>
+          </div>
+
+          <!-- Image Container with Hover Zoom & Badging -->
+          <div class="relative group rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-slate-950/60 shadow-inner">
+            <img
+              src="./assets/system_architecture.jpg"
+              alt="DND Everyday System Architecture Topology"
+              class="w-full h-auto object-cover sm:object-contain rounded-xl sm:rounded-2xl transition duration-500 group-hover:scale-[1.01] cursor-pointer"
+              onclick="openImageModal(this.src, 'DND Everyday Enterprise System Architecture Topology')"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-indigo-900/10 opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none flex items-center justify-center">
+              <span class="px-4 py-2 rounded-xl bg-slate-900/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 shadow-xl flex items-center gap-2">
+                <span>🔍 Click for High-Resolution View</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Comprehensive Architectural Tiers Grid (Every Component Detailed) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2 text-xs">
+            <!-- Tier 1: Client Apps -->
+            <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></span>
+                <span>1. Client Apps Layer</span>
+              </span>
+              <ul class="text-slate-600 dark:text-slate-400 text-[11px] space-y-1 pl-4 list-disc marker:text-blue-500">
+                <li><strong class="text-slate-800 dark:text-slate-200">Customer App</strong> (iOS/Android): Cart, live map, OTP</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Merchant Dashboard</strong>: Menu prep timer, sound alerts</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Delivery Partner App</strong>: 5s GPS ping, 7km job pool</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Admin Ops Console</strong>: 4-eye KYC review, ledger audits</li>
+              </ul>
+            </div>
+
+            <!-- Tier 2: Security & Edge -->
+            <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 shadow-sm shadow-cyan-500/50"></span>
+                <span>2. Security & Gateway Layer</span>
+              </span>
+              <ul class="text-slate-600 dark:text-slate-400 text-[11px] space-y-1 pl-4 list-disc marker:text-cyan-500">
+                <li><strong class="text-slate-800 dark:text-slate-200">Cloudflare Edge</strong>: SSL termination, DDoS WAF shielding</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">API Gateway / Nginx</strong>: CORS, reverse proxy, routing</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">JWT Auth & KYC Hard Gate</strong>: RBAC & KYC checks</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Redis Token Bucket</strong>: IP & user endpoint rate limiting</li>
+              </ul>
+            </div>
+
+            <!-- Tier 3: Modular Application Core -->
+            <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/50"></span>
+                <span>3. Modular Application Core (Node.js/Express)</span>
+              </span>
+              <ul class="text-slate-600 dark:text-slate-400 text-[11px] space-y-1 pl-4 list-disc marker:text-indigo-500">
+                <li><strong class="text-slate-800 dark:text-slate-200">Auth & KYC Domain</strong>: OTP, tokens, document workflows</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Catalog & Merchant Domain</strong>: Menus, items, store hours</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Dynamic Slab Pricing</strong>: 0-7km distance matrix</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Order State Machine</strong>: Invariant enforcement (READY)</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">PostGIS Dispatch Router</strong>: 7km radial courier broadcast</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Extra Hands Engine</strong>: Bidding, hourly & custom errands</li>
+              </ul>
+            </div>
+
+            <!-- Tier 4: Realtime & Cache -->
+            <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                <span>4. Realtime & Concurrency Engine</span>
+              </span>
+              <ul class="text-slate-600 dark:text-slate-400 text-[11px] space-y-1 pl-4 list-disc marker:text-rose-500">
+                <li><strong class="text-slate-800 dark:text-slate-200">Socket.IO Gateway</strong>: Multiplexed order, partner & merchant rooms</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Redis 7 Redlock</strong>: Concurrency mutex (prevents double acceptance)</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Geospatial GEOADD Cache</strong>: High-velocity courier coordinates</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Redis Pub/Sub Bus</strong>: Distributed cross-instance sync</li>
+              </ul>
+            </div>
+
+            <!-- Tier 5: Persistence & Ledger -->
+            <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+                <span>5. Storage & Financial Ledger</span>
+              </span>
+              <ul class="text-slate-600 dark:text-slate-400 text-[11px] space-y-1 pl-4 list-disc marker:text-emerald-500">
+                <li><strong class="text-slate-800 dark:text-slate-200">PostgreSQL 16 Engine</strong>: ACID transactions, relational integrity</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">PostGIS Extension</strong>: Spatial GIST index, ST_DWithin queries</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Double-Entry Financial Ledger</strong>: Immutable journal entries</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Auditable Balance Guarantee</strong>: &Sigma; Debits &equiv; &Sigma; Credits</li>
+              </ul>
+            </div>
+
+            <!-- Tier 6: Integrations -->
+            <div class="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+              <span class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50"></span>
+                <span>6. 3rd-Party Cloud Integrations</span>
+              </span>
+              <ul class="text-slate-600 dark:text-slate-400 text-[11px] space-y-1 pl-4 list-disc marker:text-amber-500">
+                <li><strong class="text-slate-800 dark:text-slate-200">Razorpay Payments</strong>: Escrow pre-auth, Route automated payouts</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Google Maps / OSRM</strong>: Geocoding & distance calculation</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">Twilio & Firebase FCM</strong>: Transactional SMS & push alerts</li>
+                <li><strong class="text-slate-800 dark:text-slate-200">AWS S3 / Cloud Storage</strong>: Encrypted KYC docs & catalog media</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Card 1 -->
+          <div
+            class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800/80 border-t-4 border-t-blue-500 hover:shadow-lg transition"
+          >
+            <div
+              class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold text-xl mb-4"
+            >
+              🍽️
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
+              Merchant-First Food Routing
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+              Delivery partners are
+              <strong class="text-slate-900 dark:text-slate-200">never</strong> offered a food or
+              medicine delivery upon order creation. Dispatch is released only
+              when the merchant marks the package
+              <code class="bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-mono text-xs"
+                >READY_FOR_PICKUP</code
+              >.
+            </p>
+            <div
+              class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1"
+            >
+              <span>Enforces zero food platform fee</span> &rarr;
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div
+            class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800/80 border-t-4 border-t-purple-500 hover:shadow-lg transition"
+          >
+            <div
+              class="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center font-bold text-xl mb-4"
+            >
+              🛡️
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
+              Partner KYC Hard Gate
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+              Couriers and Extra Hands workers cannot toggle online status or
+              accept job offers until their Aadhaar, PAN, License, and Bank
+              Proof have passed Admin 4-Eye Review with
+              <code class="bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-mono text-xs"
+                >APPROVED</code
+              >
+              status.
+            </p>
+            <div
+              class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1"
+            >
+              <span>Guarded via requireApprovedKYC</span> &rarr;
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div
+            class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800/80 border-t-4 border-t-emerald-500 hover:shadow-lg transition"
+          >
+            <div
+              class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold text-xl mb-4"
+            >
+              ⚖️
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">
+              Double-Entry Financial Ledger
+            </h3>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+              All order collections, restaurant settlements, courier earnings,
+              taxes, and platform margins are posted atomically into balanced
+              double-entry accounts with
+              <strong class="text-slate-900 dark:text-slate-200"
+                >&Sigma; Debits &equiv; &Sigma; Credits</strong
+              >.
+            </p>
+            <div
+              class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1"
+            >
+              <span>Zero financial floating discrepancies</span> &rarr;
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: INTERACTIVE PRICING CALCULATOR -->
+      <section
+        id="calculator"
+        class="bg-gradient-to-br from-[#0a0f1d] via-[#111936] to-[#1a1133] p-8 sm:p-10 rounded-3xl text-white shadow-2xl relative overflow-hidden border border-indigo-500/25"
+      >
+        <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-20 -top-20 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-3xl relative z-10">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30"
+              >Live Simulator</span
+            >
+            <span class="text-xs text-slate-400">&bull; PostGIS Geodesic Pricing</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1 tracking-tight">
+            Dynamic Hyperlocal Delivery Slab Calculator
+          </h2>
+          <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+            Test dynamic distance charges based on the official launch matrix in
+            blueprint &sect;8.2. Move the slider to inspect the customer charge,
+            courier payout, and DND margin.
+          </p>
+
+          <div
+            class="mt-6 space-y-5 bg-white/10 p-6 rounded-2xl backdrop-blur-xl border border-white/15 shadow-inner"
+          >
+            <div
+              class="flex items-center justify-between text-sm font-semibold"
+            >
+              <span class="text-slate-200">Delivery Distance (Outlet to Customer):</span>
+              <span
+                id="distance-display"
+                class="font-mono text-xl px-3 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/30"
+                >2.4 km</span
+              >
+            </div>
+
+            <!-- Custom Slider -->
+            <input
+              id="distance-slider"
+              type="range"
+              min="0.2"
+              max="7.0"
+              step="0.1"
+              value="2.4"
+              class="w-full cursor-pointer"
+            />
+
+            <div class="flex justify-between text-xs text-slate-400 font-mono">
+              <span>0 km</span>
+              <span>1 km</span>
+              <span>2 km</span>
+              <span>2.8 km</span>
+              <span>3.5 km</span>
+              <span>4.5 km</span>
+              <span class="text-rose-300 font-bold">7.0 km (Limit)</span>
+            </div>
+
+            <!-- Dynamic Balance Formula Bar -->
+            <div id="calculator-formula" class="flex flex-wrap items-center justify-center gap-2 text-xs font-mono py-2.5 px-4 rounded-xl bg-black/40 border border-white/10 text-slate-300 shadow-inner">
+              <!-- Dynamically populated via JS -->
+            </div>
+
+            <div
+              class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-center"
+            >
+              <div
+                class="bg-gradient-to-br from-blue-500/20 to-indigo-500/10 p-4 sm:p-5 rounded-2xl border border-blue-400/30 shadow-lg shadow-blue-500/5 transition hover:scale-102"
+              >
+                <span class="text-xs text-blue-200 uppercase font-bold tracking-wider"
+                  >Customer Fee</span
+                >
+                <div
+                  id="customer-fee"
+                  class="text-2xl sm:text-3xl font-extrabold text-white mt-1.5"
+                >
+                  ₹32.00
+                </div>
+                <span class="text-[11px] text-blue-300/80 font-medium"
+                  >Platform fee: ₹0.00</span
+                >
+              </div>
+              <div
+                class="bg-gradient-to-br from-emerald-500/20 to-teal-500/10 p-4 sm:p-5 rounded-2xl border border-emerald-400/30 shadow-lg shadow-emerald-500/5 transition hover:scale-102"
+              >
+                <span class="text-xs text-emerald-200 uppercase font-bold tracking-wider"
+                  >Partner Payout</span
+                >
+                <div
+                  id="partner-payout"
+                  class="text-2xl sm:text-3xl font-extrabold text-white mt-1.5"
+                >
+                  ₹25.00
+                </div>
+                <span class="text-[11px] text-emerald-300/80 font-medium"
+                  >Guaranteed base</span
+                >
+              </div>
+              <div
+                class="bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 p-4 sm:p-5 rounded-2xl border border-purple-400/30 shadow-lg shadow-purple-500/5 transition hover:scale-102"
+              >
+                <span class="text-xs text-purple-200 uppercase font-bold tracking-wider"
+                  >DND Margin</span
+                >
+                <div
+                  id="dnd-margin"
+                  class="text-2xl sm:text-3xl font-extrabold text-white mt-1.5"
+                >
+                  ₹7.00
+                </div>
+                <span class="text-[11px] text-purple-300/80 font-medium"
+                  >Net delivery spread</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: INTERACTIVE STATE MACHINE STEPPER -->
+      <section id="workflows" class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span
+              class="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400"
+              >Finite State Machines</span
+            >
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
+              Interactive Order Flow Visualizer
+            </h2>
+          </div>
+          <div class="flex gap-2">
+            <button
+              onclick="setWorkflow('food')"
+              id="btn-tab-food"
+              class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/40 transition cursor-pointer"
+            >
+              Food Flow
+            </button>
+            <button
+              onclick="setWorkflow('meds')"
+              id="btn-tab-meds"
+              class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
+            >
+              Medicine Flow
+            </button>
+            <button
+              onclick="setWorkflow('extra')"
+              id="btn-tab-extra"
+              class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
+            >
+              Extra Hands Flow
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="glass-card p-6 sm:p-7 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200/80 dark:border-slate-800/80"
+        >
+          <!-- Steps Navigation Container -->
+          <div
+            id="stepper-container"
+            class="flex flex-wrap gap-2 pb-4 border-b border-slate-200/80 dark:border-slate-800/80"
+          >
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Step Detail Box -->
+          <div
+            class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+            id="step-details-grid"
+          >
+            <!-- Injected via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: FULL API REFERENCE EXPLORER -->
+      <section id="api-reference" class="space-y-6">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+        >
+          <div>
+            <span
+              class="text-xs font-bold uppercase tracking-wider text-blue-600"
+              >Developer Catalog</span
+            >
+            <h2 class="text-2xl font-bold text-slate-900">
+              RESTful API Endpoints
+            </h2>
+            <p class="text-sm text-slate-500">
+              Base URL:
+              <code
+                class="bg-slate-200 text-blue-800 px-2 py-0.5 rounded text-xs font-mono"
+                >http://localhost:5000/api/v1</code
+              >
+            </p>
+          </div>
+
+          <!-- Filter Tags -->
+          <div class="flex flex-wrap gap-2">
+            <button
+              onclick="filterApi('ALL')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-blue-600 text-white shadow-sm"
+              data-filter="ALL"
+            >
+              All (34)
+            </button>
+            <button
+              onclick="filterApi('USERS')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="USERS"
+            >
+              Users (3)
+            </button>
+            <button
+              onclick="filterApi('AUTH')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="AUTH"
+            >
+              Auth (2)
+            </button>
+            <button
+              onclick="filterApi('MERCHANTS')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="MERCHANTS"
+            >
+              Merchants (3)
+            </button>
+            <button
+              onclick="filterApi('ORDERS')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="ORDERS"
+            >
+              Orders (8)
+            </button>
+            <button
+              onclick="filterApi('DISPATCH')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="DISPATCH"
+            >
+              Dispatch (4)
+            </button>
+            <button
+              onclick="filterApi('EXTRA_HANDS')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="EXTRA_HANDS"
+            >
+              Extra Hands (4)
+            </button>
+            <button
+              onclick="filterApi('MEDICINE')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="MEDICINE"
+            >
+              Medicine (3)
+            </button>
+            <button
+              onclick="filterApi('KYC')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="KYC"
+            >
+              KYC Gate (4)
+            </button>
+            <button
+              onclick="filterApi('FINANCE')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="FINANCE"
+            >
+              Finance (2)
+            </button>
+            <button
+              onclick="filterApi('ADMIN')"
+              class="api-filter-btn px-3 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+              data-filter="ADMIN"
+            >
+              Admin (1)
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative">
+          <input
+            id="api-search"
+            type="text"
+            placeholder="Search endpoint path, method, role, or description... (Press '/' to focus)"
+            class="w-full pl-11 pr-24 py-3.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 font-mono text-sm shadow-sm transition"
+          />
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">
+            🔍
+          </div>
+          <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center gap-2">
+            <button id="clear-search-btn" type="button" onclick="clearSearch()" class="hidden px-2 py-0.5 rounded-md text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 transition">✕</button>
+            <kbd class="px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 shadow-sm">/</kbd>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-mono px-1">
+          <span id="endpoint-count-display">Showing 34 of 34 endpoints</span>
+          <span class="text-indigo-600 dark:text-indigo-400 hidden sm:inline">&bull; Click any endpoint card to toggle request/response payload</span>
+        </div>
+
+        <!-- Endpoint List -->
+        <div id="endpoint-list" class="space-y-4">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+      <!-- SECTION 5: QUICKSTART & RUNTIME COMMANDS -->
+      <section id="quickstart" class="space-y-6">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-blue-600"
+            >DevOps & Setup</span
+          >
+          <h2 class="text-2xl font-bold text-slate-900">
+            Developer Quickstart Guide
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="dark-glass text-slate-200 p-6 rounded-2xl font-mono text-sm space-y-4 shadow-lg"
+          >
+            <div
+              class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-700 pb-2"
+            >
+              <span>Terminal: Start Postgres PostGIS & Redis</span>
+              <span>PowerShell</span>
+            </div>
+            <pre class="text-emerald-400">
+# 1. Launch Docker containers
+docker compose up -d
+
+# 2. Check container health
+docker ps</pre
+            >
+            <div class="text-xs text-slate-400 pt-2 border-t border-slate-700">
+              Containers:
+              <code class="text-blue-300">dnd_postgres_postgis</code> on 5433,
+              <code class="text-red-300">dnd_redis</code> on 6379.
+            </div>
+          </div>
+
+          <div
+            class="dark-glass text-slate-200 p-6 rounded-2xl font-mono text-sm space-y-4 shadow-lg"
+          >
+            <div
+              class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-700 pb-2"
+            >
+              <span>Terminal: Install, Migrate & Seed</span>
+              <span>PowerShell</span>
+            </div>
+            <pre class="text-emerald-400">
+# 3. Install packages
+npm install
+
+# 4. Run PostGIS schema & initial seed
+npm run migrate
+npm run seed
+
+# 5. Start dev server with watch
+npm run dev</pre
+            >
+            <div class="text-xs text-slate-400 pt-2 border-t border-slate-700">
+              Live Server runs on
+              <code class="text-yellow-300">http://localhost:5000</code>.
+            </div>
+          </div>
+        </div>
+
+        <!-- Zero-Docker Alternative Card -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">ZERO-DOCKER READY</span>
+            <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">Want to run without Docker?</h3>
+          </div>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+            Docker is completely optional. You can connect the backend to free managed cloud instances or run native services on Windows.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+            <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span class="font-bold text-blue-600 dark:text-blue-400">Method 1: Free Cloud DBs (Zero Local Setup)</span>
+              <ul class="mt-2 space-y-1 text-slate-600 dark:text-slate-400 list-disc list-inside font-sans text-xs">
+                <li>PostgreSQL + PostGIS: <code class="font-mono text-slate-800 dark:text-slate-200">neon.tech</code> or <code class="font-mono text-slate-800 dark:text-slate-200">supabase.com</code></li>
+                <li>Redis: <code class="font-mono text-slate-800 dark:text-slate-200">upstash.com</code> (Free serverless tier)</li>
+                <li>Set <code class="font-mono text-emerald-600 dark:text-emerald-400">DB_SSL=true</code> in <code class="font-mono text-slate-800 dark:text-slate-200">.env</code></li>
+              </ul>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span class="font-bold text-purple-600 dark:text-purple-400">Method 2: Native Windows (Local Services)</span>
+              <ul class="mt-2 space-y-1 text-slate-600 dark:text-slate-400 list-disc list-inside font-sans text-xs">
+                <li>PostgreSQL 16 installer + PostGIS 3.x via Stack Builder</li>
+                <li>Redis: <code class="font-mono text-slate-800 dark:text-slate-200">memurai.com</code> (Free Windows developer service)</li>
+                <li>Set <code class="font-mono text-emerald-600 dark:text-emerald-400">DB_PORT=5432</code> in <code class="font-mono text-slate-800 dark:text-slate-200">.env</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer
+      class="bg-slate-900 text-slate-400 py-10 border-t border-slate-800 text-center text-sm"
+    >
+      <div class="max-w-7xl mx-auto px-6 space-y-2">
+        <p class="font-semibold text-white">
+          DND Everyday &mdash; Hyperlocal Everyday Platform
+        </p>
+        <p class="text-xs text-slate-500">
+          Document generated from Blueprint v1.0 &bull; Node.js + Express +
+          PostgreSQL + PostGIS + Redis
+        </p>
+      </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+      // --------------------------------------------------------------------------
+      // 1. DYNAMIC DISTANCE SLAB CALCULATOR
+      // --------------------------------------------------------------------------
+      const slabs = [
+        { min: 0, max: 1.0, cust: 18, partner: 14, margin: 4 },
+        { min: 1.0, max: 2.0, cust: 24, partner: 19, margin: 5 },
+        { min: 2.0, max: 2.8, cust: 32, partner: 25, margin: 7 },
+        { min: 2.8, max: 3.5, cust: 42, partner: 33, margin: 9 },
+        { min: 3.5, max: 4.5, cust: 52, partner: 40, margin: 12 },
+        { min: 4.5, max: 7.0, cust: 80, partner: 62, margin: 18 },
+      ];
+
+      const slider = document.getElementById("distance-slider");
+      const distDisplay = document.getElementById("distance-display");
+      const custFeeEl = document.getElementById("customer-fee");
+      const partnerPayoutEl = document.getElementById("partner-payout");
+      const dndMarginEl = document.getElementById("dnd-margin");
+
+      function updateCalculator() {
+        const dist = parseFloat(slider.value);
+        distDisplay.innerText = dist.toFixed(1) + " km";
+
+        const match =
+          slabs.find((s) => dist >= s.min && dist <= s.max) ||
+          slabs[slabs.length - 1];
+        custFeeEl.innerText = "₹" + match.cust.toFixed(2);
+        partnerPayoutEl.innerText = "₹" + match.partner.toFixed(2);
+        dndMarginEl.innerText = "₹" + match.margin.toFixed(2);
+
+        const formulaEl = document.getElementById("calculator-formula");
+        if (formulaEl) {
+          const marginPercent = ((match.margin / match.cust) * 100).toFixed(1);
+          formulaEl.innerHTML = `
+            <span>Total Delivery Fee: <strong class="text-blue-300">₹${match.cust.toFixed(2)}</strong></span>
+            <span class="text-slate-400">=</span>
+            <span>Courier Payout: <strong class="text-emerald-300">₹${match.partner.toFixed(2)}</strong></span>
+            <span class="text-slate-400">+</span>
+            <span>DND Margin: <strong class="text-purple-300">₹${match.margin.toFixed(2)}</strong></span>
+            <span class="ml-1 px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-semibold tracking-wide border border-purple-400/30">${marginPercent}% Spread</span>
+          `;
+        }
+      }
+      slider.addEventListener("input", updateCalculator);
+      updateCalculator();
+
+      // --------------------------------------------------------------------------
+      // 2. STATE MACHINE STEPPER
+      // --------------------------------------------------------------------------
+      const workflows = {
+        food: [
+          {
+            name: "1. CREATED",
+            cust: "Order placed. Waiting for restaurant confirmation.",
+            merch: "LOUD ringing alert: New Order incoming!",
+            rider: "Not yet offered (Merchant-First routing).",
+            admin: "Visible in live incoming queue.",
+          },
+          {
+            name: "2. PREPARING",
+            cust: "Restaurant confirmed. Estimated prep time shown.",
+            merch: "Kitchen preparing items with active timer.",
+            rider: "Not offered yet.",
+            admin: "Order active; monitor kitchen delays.",
+          },
+          {
+            name: "3. READY_FOR_PICKUP",
+            cust: "Order packed. Finding nearest courier.",
+            merch: "Order ready on handover shelf.",
+            rider: "Dispatch job offered! 30s accept timer.",
+            admin: "Dispatch engine running PostGIS radius query.",
+          },
+          {
+            name: "4. PARTNER_ASSIGNED",
+            cust: "Courier assigned. Rider en route to restaurant.",
+            merch: "Rider name and ETA visible on merchant screen.",
+            rider: "Navigate to restaurant pickup location.",
+            admin: "Courier locked; is_busy = true.",
+          },
+          {
+            name: "5. PICKED_UP",
+            cust: "Order on the way! Live map telemetry active.",
+            merch: "Order handed over. Archived to completed.",
+            rider: "Delivery navigation to customer location.",
+            admin: "Order in transit.",
+          },
+          {
+            name: "6. CLOSED",
+            cust: "Delivered! Rate restaurant and courier.",
+            merch: "Net settlement credited to merchant balance.",
+            rider: "Job earning credited to wallet. Rider freed.",
+            admin: "Double-entry ledger posted atomically.",
+          },
+        ],
+        meds: [
+          {
+            name: "1. SUBMITTED_FOR_REVIEW",
+            cust: "Prescription uploaded. Awaiting pharmacist.",
+            merch: "New Rx verification card in pharmacy app.",
+            rider: "Not involved.",
+            admin: "Regulated medicine audit entry created.",
+          },
+          {
+            name: "2. QUOTE_PENDING",
+            cust: "Pharmacy quote received with itemized prices.",
+            merch: "Pharmacist submitted quote with dosage notes.",
+            rider: "Not involved.",
+            admin: "Quote generated; awaiting customer consent.",
+          },
+          {
+            name: "3. PREPARING",
+            cust: "Quote approved and payment authorized.",
+            merch: "Pharmacist packaging drugs with compliance label.",
+            rider: "Not involved.",
+            admin: "Payment captured in escrow ledger.",
+          },
+          {
+            name: "4. READY_FOR_PICKUP",
+            cust: "Medicine packed. Assigning certified courier.",
+            merch: "Ready for handover.",
+            rider: "Medicine-certified partner receives offer.",
+            admin: "Rider verification gate active.",
+          },
+          {
+            name: "5. CLOSED",
+            cust: "Delivered with recipient OTP verification.",
+            merch: "Pharmacy net settlement posted.",
+            rider: "Earning credited.",
+            admin: "Rx record locked for statutory compliance.",
+          },
+        ],
+        extra: [
+          {
+            name: "1. TASK_MATCHING",
+            cust: "Task request created. Safety gate validated.",
+            merch: "Bypasses merchant entirely.",
+            rider: "Offer broadcast to nearby Extra Hands workers.",
+            admin: "Direct match monitored.",
+          },
+          {
+            name: "2. EN_ROUTE",
+            cust: "Worker assigned and traveling to location.",
+            merch: "N/A",
+            rider: "Navigating to customer work site.",
+            admin: "Partner active on task.",
+          },
+          {
+            name: "3. TASK_ARRIVED",
+            cust: "Worker arrived. Customer shares arrival OTP.",
+            merch: "N/A",
+            rider: "Enter Arrival OTP to verify site presence.",
+            admin: "Arrival verified by OTP.",
+          },
+          {
+            name: "4. IN_PROGRESS",
+            cust: "Physical task underway. Live timer running.",
+            merch: "N/A",
+            rider: "Worker tapped 'Start Work'; SOS button ready.",
+            admin: "Active task monitoring.",
+          },
+          {
+            name: "5. CLOSED",
+            cust: "Task finished. Share Completion OTP.",
+            merch: "N/A",
+            rider: "80% earning credited based on duration.",
+            admin: "20% DND margin recorded in ledger.",
+          },
+        ],
+      };
+
+      let currentFlow = "food";
+      let currentStepIdx = 0;
+
+      function renderWorkflow() {
+        const steps = workflows[currentFlow] || [];
+        const container = document.getElementById("stepper-container");
+        if (!container) return;
+        container.innerHTML = "";
+
+        steps.forEach((s, idx) => {
+          const btn = document.createElement("button");
+          const isActive = idx === currentStepIdx;
+          btn.className = `px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+            isActive
+              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/25 ring-2 ring-indigo-400/40 scale-102"
+              : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+          }`;
+          btn.innerText = s.name;
+          btn.onclick = () => {
+            currentStepIdx = idx;
+            renderWorkflow();
+          };
+          container.appendChild(btn);
+        });
+
+        const curr = steps[currentStepIdx] || { cust: "", merch: "", rider: "", admin: "" };
+        const grid = document.getElementById("step-details-grid");
+        if (!grid) return;
+        grid.innerHTML = `
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50/60 dark:from-blue-950/40 dark:to-indigo-950/20 border border-blue-200/80 dark:border-blue-800/60 shadow-sm transition hover:shadow-md">
+          <div class="flex items-center gap-2 text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+            <span class="text-base">👤</span> Customer View
+          </div>
+          <p class="text-sm text-slate-700 dark:text-slate-200 mt-2.5 font-medium leading-relaxed">${curr.cust}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50/60 dark:from-amber-950/40 dark:to-orange-950/20 border border-amber-200/80 dark:border-amber-800/60 shadow-sm transition hover:shadow-md">
+          <div class="flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+            <span class="text-base">🏪</span> Merchant View
+          </div>
+          <p class="text-sm text-slate-700 dark:text-slate-200 mt-2.5 font-medium leading-relaxed">${curr.merch}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50/60 dark:from-emerald-950/40 dark:to-teal-950/20 border border-emerald-200/80 dark:border-emerald-800/60 shadow-sm transition hover:shadow-md">
+          <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+            <span class="text-base">🛵</span> Courier View
+          </div>
+          <p class="text-sm text-slate-700 dark:text-slate-200 mt-2.5 font-medium leading-relaxed">${curr.rider}</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-gradient-to-br from-purple-50 to-fuchsia-50/60 dark:from-purple-950/40 dark:to-fuchsia-950/20 border border-purple-200/80 dark:border-purple-800/60 shadow-sm transition hover:shadow-md">
+          <div class="flex items-center gap-2 text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+            <span class="text-base">🛡️</span> Central Ops View
+          </div>
+          <p class="text-sm text-slate-700 dark:text-slate-200 mt-2.5 font-medium leading-relaxed">${curr.admin}</p>
+        </div>
+      `;
+      }
+
+      function setWorkflow(flow) {
+        currentFlow = flow;
+        currentStepIdx = 0;
+        const activeClass =
+          "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/40 transition cursor-pointer";
+        const inactiveClass =
+          "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer";
+        
+        const btnFood = document.getElementById("btn-tab-food");
+        const btnMeds = document.getElementById("btn-tab-meds");
+        const btnExtra = document.getElementById("btn-tab-extra");
+
+        if (btnFood) btnFood.className = flow === "food" ? activeClass : inactiveClass;
+        if (btnMeds) btnMeds.className = flow === "meds" ? activeClass : inactiveClass;
+        if (btnExtra) btnExtra.className = flow === "extra" ? activeClass : inactiveClass;
+
+        renderWorkflow();
+      }
+      renderWorkflow();
+
+      // --------------------------------------------------------------------------
+      // 3. COMPLETE API REFERENCE DATA
+      // --------------------------------------------------------------------------
+      const apis = [
+        {
+          tag: "USERS",
+          method: "GET",
+          path: "/api/v1/users/profile",
+          desc: "Fetches current authenticated user profile, roles, verification status, and partner KYC / vehicle details if partner.",
+          role: "All Authenticated Users",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              id: "u100-uuid...",
+              phoneNumber: "+919876543210",
+              fullName: "Sriyan Karthikeya",
+              email: "sriyan@dndeveryday.com",
+              role: "CUSTOMER",
+              isActive: true,
+              isPhoneVerified: true,
+              partnerProfile: null,
+            },
+          },
+        },
+        {
+          tag: "USERS",
+          method: "GET",
+          path: "/api/v1/users/addresses",
+          desc: "Lists all saved delivery addresses for the logged-in customer with PostGIS spatial coordinates.",
+          role: "CUSTOMER",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            count: 2,
+            data: [
+              {
+                id: "addr-uuid...",
+                label: "Home",
+                addressLine1: "Flat 402, Green Valley Towers",
+                landmark: "Near Central Park",
+                pincode: "500081",
+                isDefault: true,
+                coordinates: {
+                  lat: 17.4525,
+                  lng: 78.293,
+                },
+              },
+            ],
+          },
+        },
+        {
+          tag: "USERS",
+          method: "POST",
+          path: "/api/v1/users/addresses",
+          desc: "Saves a new customer delivery address with spatial PostGIS coordinates.",
+          role: "CUSTOMER",
+          headers: [
+            "Authorization: Bearer <token>",
+            "Content-Type: application/json",
+          ],
+          req: {
+            label: "Work",
+            addressLine1: "Building 5, Cyber Gateway",
+            pincode: "500081",
+            lat: 17.4518,
+            lng: 78.2917,
+            isDefault: false,
+          },
+          res: {
+            success: true,
+            message: "Address saved successfully",
+            data: {
+              id: "addr-new-uuid...",
+              label: "Work",
+              address_line1: "Building 5, Cyber Gateway",
+              is_default: false,
+            },
+          },
+        },
+        {
+          tag: "AUTH",
+          method: "POST",
+          path: "/api/v1/auth/send-otp",
+          desc: "Request 6-digit mobile verification OTP for customer, merchant, or partner.",
+          role: "Public / All",
+          headers: ["Content-Type: application/json"],
+          req: {
+            phoneNumber: "+919876543210",
+          },
+          res: {
+            success: true,
+            message: "OTP sent successfully (Pilot Default: 123456)",
+            phoneNumber: "+919876543210",
+          },
+        },
+        {
+          tag: "AUTH",
+          method: "POST",
+          path: "/api/v1/auth/verify-otp",
+          desc: "Verifies 6-digit OTP and generates JWT token with embedded role claims.",
+          role: "Public / All",
+          headers: ["Content-Type: application/json"],
+          req: {
+            phoneNumber: "+919876543210",
+            otp: "123456",
+            role: "CUSTOMER",
+          },
+          res: {
+            success: true,
+            data: {
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+              user: {
+                id: "d0000000-0000...",
+                phone: "+919876543210",
+                role: "CUSTOMER",
+                fullName: "Sriyan Karthikeya",
+              },
+            },
+          },
+        },
+        {
+          tag: "MERCHANTS",
+          method: "GET",
+          path: "/api/v1/merchants",
+          desc: "Discovers open restaurants or pharmacies nearby using PostGIS ST_DWithin and distance ordering.",
+          role: "Public / All",
+          headers: [
+            "Query: ?lat=17.4518&lng=78.2917&type=RESTAURANT&radius=7000",
+          ],
+          req: null,
+          res: {
+            success: true,
+            count: 1,
+            outlets: [
+              {
+                id: "c0000000-0000-0000-0000-000000000001",
+                name: "The Urban Gourmet Kitchen - Central Outlet",
+                tradeName: "The Urban Gourmet Kitchen",
+                merchantType: "RESTAURANT",
+                phone: "+919888811111",
+                isOpen: true,
+                avgPrepMinutes: 20,
+                distanceKm: "0.15",
+                coordinates: {
+                  lat: 17.4518,
+                  lng: 78.2917,
+                },
+              },
+            ],
+          },
+        },
+        {
+          tag: "MERCHANTS",
+          method: "GET",
+          path: "/api/v1/merchants/:id",
+          desc: "Fetches outlet details and full active menu items grouped by categories (Biryani, Starters, Beverages).",
+          role: "Public / All",
+          headers: [],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              outlet: {
+                id: "outlet-uuid...",
+                name: "The Urban Gourmet Kitchen",
+                isOpen: true,
+              },
+              categories: {
+                "Biryani & Rice": [
+                  {
+                    id: "item-1",
+                    name: "Special Chicken Dum Biryani",
+                    pricePaise: "32000",
+                    priceRupees: "320.00",
+                    isVeg: false,
+                  },
+                ],
+              },
+              totalItems: 3,
+            },
+          },
+        },
+        {
+          tag: "MERCHANTS",
+          method: "GET",
+          path: "/api/v1/merchants/:id/orders",
+          desc: "Live order board for kitchen display or pharmacy console (shows new, preparing, and ready orders).",
+          role: "MERCHANT_OWNER, MERCHANT_STAFF, ADMIN_OPERATIONS",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              outletId: "outlet-uuid...",
+              activeOrdersCount: 1,
+              orders: [
+                {
+                  order_number: "DND-849102-F104",
+                  status: "PREPARING",
+                  estimated_prep_minutes: 25,
+                  customer_name: "Ravi Teja",
+                  masked_customer_phone: "+9198****3210",
+                  items: [
+                    {
+                      name: "Chicken Dum Biryani",
+                      quantity: 2,
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "GET",
+          path: "/api/v1/orders",
+          desc: "Lists past and active orders for customer, merchant, courier, or admin with status filter & pagination.",
+          role: "CUSTOMER, MERCHANT_STAFF, DELIVERY_PARTNER, ADMIN",
+          headers: [
+            "Authorization: Bearer <token>",
+            "Query: ?status=ACTIVE&limit=20&offset=0",
+          ],
+          req: null,
+          res: {
+            success: true,
+            count: 1,
+            orders: [
+              {
+                id: "order-uuid...",
+                orderNumber: "DND-849102-F104",
+                serviceType: "FOOD",
+                status: "PREPARING",
+                totalAmountPaise: "70400",
+                merchantName: "The Urban Gourmet Kitchen",
+                createdAt: "2026-09-25T06:31:00.000Z",
+              },
+            ],
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "GET",
+          path: "/api/v1/orders/:id",
+          desc: "Detailed order breakdown including line items, taxes, distance, courier info, and role-appropriate OTP.",
+          role: "CUSTOMER, MERCHANT_STAFF, DELIVERY_PARTNER, ADMIN",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              id: "order-uuid...",
+              orderNumber: "DND-849102-F104",
+              status: "PICKED_UP",
+              deliveryLocation: {
+                addressLine1: "Flat 402, Green Valley",
+                pincode: "500081",
+              },
+              bill: {
+                itemTotalPaise: "64000",
+                foodGstPaise: "3200",
+                deliveryFeePaise: "3200",
+                totalAmountPaise: "70400",
+              },
+              items: [
+                {
+                  name: "Special Chicken Dum Biryani",
+                  quantity: 2,
+                  unitPricePaise: "32000",
+                },
+              ],
+              partner: {
+                name: "Ramesh Kumar",
+                vehicle: "MOTORCYCLE",
+                plateNumber: "TS08EA1234",
+              },
+              deliveryOtp: "840192",
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "GET",
+          path: "/api/v1/orders/:id/track",
+          desc: "Real-time telemetry stream data for customer app map tracking (courier location, battery, outlet coords).",
+          role: "CUSTOMER, ADMIN",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              orderId: "order-uuid...",
+              status: "PICKED_UP",
+              outletLocation: {
+                lat: 17.4518,
+                lng: 78.2917,
+              },
+              dropLocation: {
+                lat: 17.4525,
+                lng: 78.293,
+              },
+              partner: {
+                name: "Ramesh Kumar",
+                vehicleType: "MOTORCYCLE",
+                location: {
+                  lat: 17.452,
+                  lng: 78.2922,
+                },
+                lastLocationUpdate: "2026-09-25T06:33:00.000Z",
+                batteryPercentage: 90,
+              },
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "POST",
+          path: "/api/v1/orders/food",
+          desc: "Customer places a food order with dynamic PostGIS delivery calculation & Idempotency protection.",
+          role: "CUSTOMER",
+          headers: [
+            "Authorization: Bearer <token>",
+            "Idempotency-Key: <unique-uuid>",
+          ],
+          req: {
+            outletId: "c0000000-0000-0000-0000-000000000001",
+            deliveryAddressId: "f0000000-0000-0000-0000-000000000001",
+            items: [
+              {
+                menuItemId: "e1000000-0000-0000-0000-000000000001",
+                quantity: 2,
+                instructions: "Less spicy",
+              },
+            ],
+          },
+          res: {
+            success: true,
+            data: {
+              orderId: "a123-b456...",
+              orderNumber: "DND-849102-F104",
+              status: "CREATED",
+              bill: {
+                itemTotalPaise: "64000",
+                foodGstPaise: "3200",
+                deliveryFeePaise: "3200",
+                platformFeePaise: "0",
+                totalAmountPaise: "70400",
+                distanceKm: "2.40",
+              },
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "POST",
+          path: "/api/v1/orders/:id/accept",
+          desc: "Restaurant confirms order and commits to kitchen preparation time (minutes).",
+          role: "MERCHANT_OWNER, MERCHANT_STAFF",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            prepTimeMinutes: 25,
+          },
+          res: {
+            success: true,
+            message: "Order accepted by merchant",
+            data: {
+              status: "PREPARING",
+              estimatedPrepMinutes: 25,
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "POST",
+          path: "/api/v1/orders/:id/ready",
+          desc: "Restaurant marks packed food ready. Core Invariant: Immediately triggers PostGIS Dispatch Engine!",
+          role: "MERCHANT_OWNER, MERCHANT_STAFF",
+          headers: ["Authorization: Bearer <token>"],
+          req: {},
+          res: {
+            success: true,
+            message: "Order marked ready and dispatch initiated",
+            data: {
+              status: "READY_FOR_PICKUP",
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "POST",
+          path: "/api/v1/orders/:id/pickup",
+          desc: "Courier verifies restaurant handover using the 6-digit pickup verification code.",
+          role: "DELIVERY_PARTNER (Approved KYC only)",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            pickupCode: "491028",
+          },
+          res: {
+            success: true,
+            message: "Order picked up",
+            data: {
+              status: "PICKED_UP",
+            },
+          },
+        },
+        {
+          tag: "ORDERS",
+          method: "POST",
+          path: "/api/v1/orders/:id/deliver",
+          desc: "Courier enters customer delivery OTP at doorstep. Automatically executes double-entry ledger settlement!",
+          role: "DELIVERY_PARTNER (Approved KYC only)",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            deliveryOtp: "840192",
+          },
+          res: {
+            success: true,
+            message: "Order completed and settled in ledger",
+            data: {
+              status: "CLOSED",
+            },
+          },
+        },
+        {
+          tag: "DISPATCH",
+          method: "GET",
+          path: "/api/v1/dispatch/partner/active-job",
+          desc: "Fetches ongoing assigned delivery or Extra Hands task for courier, including navigation and customer details.",
+          role: "DELIVERY_PARTNER, EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            activeJob: {
+              orderId: "order-uuid...",
+              orderNumber: "DND-849102-F104",
+              status: "PARTNER_ASSIGNED",
+              pickup: {
+                name: "The Urban Gourmet Kitchen",
+                address: "Central High Street",
+                coordinates: {
+                  lat: 17.4518,
+                  lng: 78.2917,
+                },
+              },
+              dropoff: {
+                address: "Flat 402, Green Valley Towers",
+                coordinates: {
+                  lat: 17.4525,
+                  lng: 78.293,
+                },
+              },
+              customer: {
+                name: "Ravi Teja",
+                maskedPhone: "+9198****3210",
+              },
+            },
+          },
+        },
+        {
+          tag: "DISPATCH",
+          method: "POST",
+          path: "/api/v1/dispatch/offers/accept",
+          desc: "Courier accepts job offer within the 30-second countdown window.",
+          role: "DELIVERY_PARTNER (Approved KYC)",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            offerId: "8f7a-1123-uuid...",
+          },
+          res: {
+            success: true,
+            message: "Offer accepted successfully",
+            data: {
+              success: true,
+              orderId: "order-uuid...",
+            },
+          },
+        },
+        {
+          tag: "DISPATCH",
+          method: "POST",
+          path: "/api/v1/dispatch/status/toggle",
+          desc: "Courier goes Online or Offline. Hard KYC Gate strictly rejects unapproved partners.",
+          role: "DELIVERY_PARTNER, EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            isOnline: true,
+          },
+          res: {
+            success: true,
+            message: "Partner is now ONLINE and eligible for jobs",
+          },
+        },
+        {
+          tag: "DISPATCH",
+          method: "POST",
+          path: "/api/v1/dispatch/telemetry",
+          desc: "Courier streams live GPS coordinates and battery percentage during active orders.",
+          role: "DELIVERY_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            lat: 17.4528,
+            lng: 78.2934,
+            batteryPercentage: 88,
+          },
+          res: {
+            success: true,
+            message: "Location updated",
+          },
+        },
+        {
+          tag: "EXTRA_HANDS",
+          method: "POST",
+          path: "/api/v1/extra-hands/request",
+          desc: "Customer requests physical help. Rejects hazardous/skilled tasks (electrical, plumbing, high-altitude).",
+          role: "CUSTOMER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            deliveryAddressId: "addr-uuid...",
+            taskCategory: "FURNITURE_LIFTING",
+            taskDescription:
+              "Need help moving two wooden wardrobes to the second floor.",
+            helpersCount: 2,
+            estimatedDurationHours: 1.5,
+          },
+          res: {
+            success: true,
+            data: {
+              orderId: "task-uuid...",
+              orderNumber: "DND-912044-X201",
+              status: "TASK_MATCHING",
+              arrivalOtp: "391024",
+              estimatedPricePaise: "60000",
+            },
+          },
+        },
+        {
+          tag: "EXTRA_HANDS",
+          method: "POST",
+          path: "/api/v1/extra-hands/:id/verify-arrival",
+          desc: "Partner enters customer arrival OTP to verify physical presence on site.",
+          role: "EXTRA_HANDS_PARTNER (Approved KYC)",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            otp: "391024",
+          },
+          res: {
+            success: true,
+            message: "Arrival verified",
+            data: {
+              status: "TASK_ARRIVED",
+            },
+          },
+        },
+        {
+          tag: "EXTRA_HANDS",
+          method: "POST",
+          path: "/api/v1/extra-hands/:id/start-work",
+          desc: "Partner starts active work timer after confirming work environment is safe.",
+          role: "EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {},
+          res: {
+            success: true,
+            message: "Work timer started",
+            data: {
+              status: "TASK_IN_PROGRESS",
+            },
+          },
+        },
+        {
+          tag: "EXTRA_HANDS",
+          method: "POST",
+          path: "/api/v1/extra-hands/:id/complete",
+          desc: "Partner enters customer completion OTP. Calculates final duration and credits 80% to partner wallet.",
+          role: "EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            otp: "719302",
+          },
+          res: {
+            success: true,
+            message: "Task completed and settled",
+            data: {
+              status: "CLOSED",
+              actualMinutes: 85,
+            },
+          },
+        },
+        {
+          tag: "MEDICINE",
+          method: "POST",
+          path: "/api/v1/medicine/prescription",
+          desc: "Customer uploads prescription image and patient metadata. Mandatory for regulated drugs.",
+          role: "CUSTOMER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            deliveryAddressId: "addr-uuid...",
+            pharmacyOutletId: "pharm-uuid...",
+            prescriptionImageUrls: [
+              "https://s3.ap-south-1.amazonaws.com/dnd-rx/rx_1042.jpg",
+            ],
+            patientName: "Ravi Teja",
+            patientAge: 29,
+            substitutionsAllowed: false,
+          },
+          res: {
+            success: true,
+            data: {
+              orderId: "rx-order-uuid...",
+              orderNumber: "DND-819201-M301",
+              status: "SUBMITTED_FOR_REVIEW",
+            },
+          },
+        },
+        {
+          tag: "MEDICINE",
+          method: "POST",
+          path: "/api/v1/medicine/:id/quote",
+          desc: "Registered pharmacist verifies prescription, creates itemized quote with medicine prices & notes.",
+          role: "MERCHANT_STAFF, MERCHANT_OWNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            pharmacistNotes:
+              "Dispensing 10 strips as prescribed. Take after food.",
+            items: [
+              {
+                name: "Augmentin 625 Duo",
+                quantity: 2,
+                unitPricePaise: "21000",
+                gstPercent: 12.0,
+              },
+            ],
+          },
+          res: {
+            success: true,
+            message: "Quote generated and sent to customer",
+            data: {
+              status: "QUOTE_CONFIRMATION_PENDING",
+              totalAmountPaise: "49440",
+            },
+          },
+        },
+        {
+          tag: "MEDICINE",
+          method: "POST",
+          path: "/api/v1/medicine/:id/approve-quote",
+          desc: "Customer approves pharmacist quote and authorizes payment. Hard gate before pharmacy can prepare.",
+          role: "CUSTOMER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {},
+          res: {
+            success: true,
+            message: "Quote approved by customer. Pharmacy preparing.",
+            data: {
+              status: "PREPARING",
+            },
+          },
+        },
+        {
+          tag: "KYC",
+          method: "GET",
+          path: "/api/v1/kyc/status",
+          desc: "Partner retrieves current KYC application status, uploaded document audit list, and approved verticals.",
+          role: "DELIVERY_PARTNER, EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              kycStatus: "APPROVED",
+              approvedAt: "2026-09-25T06:31:00.000Z",
+              verticals: {
+                food: true,
+                medicine: true,
+                extraHands: true,
+              },
+              documents: [
+                {
+                  documentType: "DRIVING_LICENSE",
+                  maskedNumber: "TS08****1234",
+                  reviewStatus: "APPROVED",
+                },
+              ],
+            },
+          },
+        },
+        {
+          tag: "KYC",
+          method: "POST",
+          path: "/api/v1/kyc/documents",
+          desc: "Partner uploads required KYC documents (Aadhaar, PAN, Driving License, Bank Proof).",
+          role: "DELIVERY_PARTNER, EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            documentType: "DRIVING_LICENSE",
+            fileUrl: "https://s3.ap-south-1.amazonaws.com/dnd-kyc/dl_front.jpg",
+            maskedNumber: "TS082020001234",
+          },
+          res: {
+            success: true,
+            message: "Document submitted for review",
+          },
+        },
+        {
+          tag: "KYC",
+          method: "GET",
+          path: "/api/v1/kyc/admin/queue",
+          desc: "Admin fetches pending partner review queue with documents for four-eye inspection.",
+          role: "ADMIN_KYC, ADMIN_OPERATIONS, ADMIN_SUPER",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            count: 1,
+            queue: [
+              {
+                id: "partner-id",
+                fullName: "Ramesh Kumar",
+                phone: "+919777700001",
+                kyc_status: "SUBMITTED",
+              },
+            ],
+          },
+        },
+        {
+          tag: "KYC",
+          method: "POST",
+          path: "/api/v1/kyc/admin/partners/:partnerProfileId/decision",
+          desc: "Admin approves or rejects KYC application, granting vertical delivery eligibility flags.",
+          role: "ADMIN_KYC, ADMIN_SUPER",
+          headers: ["Authorization: Bearer <token>"],
+          req: {
+            decision: "APPROVED",
+            eligibleVerticals: {
+              food: true,
+              medicine: true,
+              extraHands: true,
+            },
+          },
+          res: {
+            success: true,
+            decision: "APPROVED",
+          },
+        },
+        {
+          tag: "FINANCE",
+          method: "GET",
+          path: "/api/v1/finance/partner/earnings",
+          desc: "Courier or Extra Hands worker fetches wallet earnings (today vs total) and completed job statistics.",
+          role: "DELIVERY_PARTNER, EXTRA_HANDS_PARTNER",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              partnerId: "partner-uuid...",
+              completedJobs: 8,
+              todayEarningsPaise: "28000",
+              todayEarningsRupees: "280.00",
+              totalEarningsPaise: "152000",
+              totalEarningsRupees: "1520.00",
+            },
+          },
+        },
+        {
+          tag: "FINANCE",
+          method: "GET",
+          path: "/api/v1/finance/admin/ledger-accounts",
+          desc: "Admin finance balance sheet & chart of accounts statement (Escrow, Merchant Payable, Rider Payout, Margin).",
+          role: "ADMIN_FINANCE, ADMIN_SUPER",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            count: 7,
+            accounts: [
+              {
+                account_code: "CUST_ESCROW",
+                account_type: "LIABILITY",
+                balanceRupees: "704.00",
+              },
+              {
+                account_code: "MERCHANT_PAYABLE",
+                account_type: "LIABILITY",
+                balanceRupees: "580.80",
+              },
+              {
+                account_code: "PARTNER_PAYABLE",
+                account_type: "LIABILITY",
+                balanceRupees: "25.00",
+              },
+              {
+                account_code: "DND_COMMISSION_REV",
+                account_type: "REVENUE",
+                balanceRupees: "76.80",
+              },
+              {
+                account_code: "DND_DELIVERY_MARGIN",
+                account_type: "REVENUE",
+                balanceRupees: "7.00",
+              },
+            ],
+          },
+        },
+        {
+          tag: "ADMIN",
+          method: "GET",
+          path: "/api/v1/admin/live-ops",
+          desc: "Real-time operational dashboard: today metrics (GMV, orders), partner supply (online/busy/idle), delayed orders queue.",
+          role: "ADMIN_OPERATIONS, ADMIN_SUPER, ADMIN_SUPPORT",
+          headers: ["Authorization: Bearer <token>"],
+          req: null,
+          res: {
+            success: true,
+            data: {
+              metrics: {
+                totalOrdersToday: 45,
+                created: 3,
+                preparing: 5,
+                readyForPickup: 2,
+                inTransit: 7,
+                completed: 28,
+                cancelled: 0,
+                gmvRupees: "24890.00",
+              },
+              supply: {
+                totalApproved: 12,
+                available: 5,
+                busy: 7,
+                offline: 4,
+              },
+              urgentQueue: {
+                delayedReadyOrders: [],
+              },
+            },
+          },
+        },
+      ];
+
+      let currentApiFilter = "ALL";
+      const endpointList = document.getElementById("endpoint-list");
+      const apiSearch = document.getElementById("api-search");
+
+      function renderApiList() {
+        const q = apiSearch.value.toLowerCase().trim();
+
+        // Toggle clear search button visibility
+        const clearBtn = document.getElementById("clear-search-btn");
+        if (clearBtn) {
+          clearBtn.classList.toggle("hidden", !q);
+        }
+
+        const filtered = apis.filter((a) => {
+          const matchesTag =
+            currentApiFilter === "ALL" || a.tag === currentApiFilter;
+          const matchesQuery =
+            !q ||
+            a.path.toLowerCase().includes(q) ||
+            a.method.toLowerCase().includes(q) ||
+            a.desc.toLowerCase().includes(q) ||
+            a.role.toLowerCase().includes(q);
+          return matchesTag && matchesQuery;
+        });
+
+        // Update count badge
+        const countDisplay = document.getElementById("endpoint-count-display");
+        if (countDisplay) {
+          countDisplay.innerText = `Showing ${filtered.length} of ${apis.length} endpoints`;
+        }
+
+        if (filtered.length === 0) {
+          endpointList.innerHTML = `
+          <div class="glass-card p-12 text-center text-slate-400 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800">
+            <div class="text-4xl mb-3">🔍</div>
+            <p class="text-base font-bold text-slate-700 dark:text-slate-200">No endpoints found matching your filter</p>
+            <p class="text-xs mt-1 text-slate-500">Try clearing your search query or selecting 'All'</p>
+            <button onclick="clearSearch()" class="mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition">Reset Search Filter</button>
+          </div>
+        `;
+          return;
+        }
+
+        endpointList.innerHTML = filtered
+          .map((api, idx) => {
+            const badgeClass =
+              api.method === "GET"
+                ? "badge-get"
+                : api.method === "POST"
+                  ? "badge-post"
+                  : api.method === "PUT"
+                    ? "badge-put"
+                    : "badge-delete";
+
+            const roleBadge = api.role.toLowerCase().includes("admin")
+              ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/25"
+              : api.role.toLowerCase().includes("merchant") || api.role.toLowerCase().includes("pharmacist")
+                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25"
+                : api.role.toLowerCase().includes("partner") || api.role.toLowerCase().includes("courier") || api.role.toLowerCase().includes("worker")
+                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
+                  : "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25";
+
+            const methodHover = api.method === "GET"
+              ? "hover:border-emerald-500/50"
+              : api.method === "POST"
+                ? "hover:border-blue-500/50"
+                : "hover:border-amber-500/50";
+
+            return `
+          <div class="glass-card rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden shadow-sm hover:shadow-lg ${methodHover} transition-all duration-200 group">
+            <div class="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer select-none" onclick="toggleApiDetail(${idx})">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono uppercase tracking-wider ${badgeClass}">${api.method}</span>
+                <span class="font-mono text-sm font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">${api.path}</span>
+                <span class="text-[11px] bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 px-2.5 py-0.5 rounded-md font-mono border border-slate-200/60 dark:border-slate-700/60">${api.tag}</span>
+              </div>
+              <div class="flex items-center gap-2.5 text-xs">
+                <span class="px-3 py-1 rounded-full font-medium border ${roleBadge}">${api.role}</span>
+                <button type="button" onclick="event.stopPropagation(); copyToClipboard('${api.path}', this)" title="Copy path" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-slate-700 border border-slate-200/60 dark:border-slate-700/60 transition flex items-center gap-1 font-mono text-[11px] cursor-pointer">
+                  <span>Copy</span>
+                </button>
+                <span class="text-slate-400 font-mono text-sm inline-block transition-transform duration-200" id="arrow-${idx}">↓</span>
+              </div>
+            </div>
+
+            <div class="px-4 sm:px-5 pb-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              ${api.desc}
+            </div>
+
+            <!-- Expandable JSON Details -->
+            <div id="detail-${idx}" class="hidden p-5 bg-[#080d1a] text-slate-200 text-xs font-mono border-t border-slate-800/90 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                  <span class="ml-2 text-[10px] text-slate-400 uppercase tracking-wider font-bold">API Specifications</span>
+                </div>
+                <span class="text-[11px] text-slate-400 font-mono">${api.method} ${api.path}</span>
+              </div>
+
+              <div>
+                <span class="text-slate-400 uppercase text-[10px] tracking-wider font-bold">Required Headers</span>
+                <div class="mt-1.5 flex flex-wrap gap-2">
+                  ${api.headers.map(h => `<span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-blue-300">${h}</span>`).join("")}
+                </div>
+              </div>
+
+              ${
+                api.req
+                  ? `
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-400 uppercase text-[10px] tracking-wider font-bold">Request Body JSON</span>
+                    <button type="button" onclick="copyToClipboard('${JSON.stringify(api.req).replace(/'/g, "\\'")}', this)" class="text-[11px] text-slate-400 hover:text-slate-200 font-mono transition">Copy JSON</button>
+                  </div>
+                  <pre class="mt-1.5 bg-[#04060d] p-3.5 rounded-xl overflow-x-auto text-emerald-300 border border-slate-800/80 shadow-inner">${JSON.stringify(api.req, null, 2)}</pre>
+                </div>
+              `
+                  : ""
+              }
+
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 uppercase text-[10px] tracking-wider font-bold">Success Response (200 / 201)</span>
+                  <button type="button" onclick="copyToClipboard('${JSON.stringify(api.res).replace(/'/g, "\\'")}', this)" class="text-[11px] text-slate-400 hover:text-slate-200 font-mono transition">Copy JSON</button>
+                </div>
+                <pre class="mt-1.5 bg-[#04060d] p-3.5 rounded-xl overflow-x-auto text-cyan-300 border border-slate-800/80 shadow-inner">${JSON.stringify(api.res, null, 2)}</pre>
+              </div>
+            </div>
+          </div>
+        `;
+          })
+          .join("");
+      }
+
+      function toggleApiDetail(idx) {
+        const el = document.getElementById(`detail-${idx}`);
+        const arrow = document.getElementById(`arrow-${idx}`);
+        if (el.classList.contains("hidden")) {
+          el.classList.remove("hidden");
+          arrow.style.transform = "rotate(180deg)";
+        } else {
+          el.classList.add("hidden");
+          arrow.style.transform = "rotate(0deg)";
+        }
+      }
+
+      function filterApi(tag) {
+        currentApiFilter = tag;
+        document.querySelectorAll(".api-filter-btn").forEach((btn) => {
+          if (btn.getAttribute("data-filter") === tag) {
+            btn.className =
+              "api-filter-btn px-3.5 py-1.5 text-xs font-bold rounded-full bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/40 cursor-pointer";
+          } else {
+            btn.className =
+              "api-filter-btn px-3.5 py-1.5 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer";
+          }
+        });
+        renderApiList();
+      }
+
+      function clearSearch() {
+        apiSearch.value = "";
+        renderApiList();
+        apiSearch.focus();
+      }
+
+      function copyToClipboard(text, btn) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(() => {
+            showCopyFeedback(btn);
+          }).catch(() => fallbackCopy(text, btn));
+        } else {
+          fallbackCopy(text, btn);
+        }
+      }
+
+      function fallbackCopy(text, btn) {
+        const input = document.createElement("textarea");
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand("copy");
+        document.body.removeChild(input);
+        showCopyFeedback(btn);
+      }
+
+      function showCopyFeedback(btn) {
+        const original = btn.innerHTML;
+        btn.innerHTML = `<span class="text-emerald-400 font-bold">Copied! ✓</span>`;
+        setTimeout(() => {
+          btn.innerHTML = original;
+        }, 1400);
+      }
+
+      // --------------------------------------------------------------------------
+      // THEME TOGGLE (DARK / LIGHT MODE)
+      // --------------------------------------------------------------------------
+      function initTheme() {
+        const saved = localStorage.getItem("dnd-theme");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        if (saved === "dark" || (!saved && prefersDark)) {
+          document.documentElement.classList.add("dark");
+          updateThemeButton(true);
+        } else {
+          document.documentElement.classList.remove("dark");
+          updateThemeButton(false);
+        }
+      }
+
+      function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("dnd-theme", isDark ? "dark" : "light");
+        updateThemeButton(isDark);
+      }
+
+      function updateThemeButton(isDark) {
+        document.querySelectorAll(".theme-icon").forEach((el) => {
+          el.innerText = isDark ? "☀️" : "🌙";
+        });
+        document.querySelectorAll(".theme-text").forEach((el) => {
+          el.innerText = isDark ? "Light Mode" : "Dark Mode";
+        });
+      }
+
+      initTheme();
+
+      // --------------------------------------------------------------------------
+      // DIAGRAM LIGHTBOX MODAL
+      // --------------------------------------------------------------------------
+      function openImageModal(imgSrc, title) {
+        const modal = document.getElementById("diagram-modal");
+        const modalImg = document.getElementById("diagram-modal-img");
+        const modalTitle = document.getElementById("diagram-modal-title");
+        const modalLink = document.getElementById("diagram-modal-download");
+        if (!modal || !modalImg) return;
+        modalImg.src = imgSrc;
+        modalTitle.innerText = title;
+        modalLink.href = imgSrc;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeImageModal(e) {
+        if (e && e.target && e.target.id !== "diagram-modal") return;
+        closeImageModalDirect();
+      }
+
+      function closeImageModalDirect() {
+        const modal = document.getElementById("diagram-modal");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+        document.body.style.overflow = "auto";
+      }
+
+      apiSearch.addEventListener("input", renderApiList);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement !== apiSearch) {
+          e.preventDefault();
+          apiSearch.focus();
+        } else if (e.key === "Escape") {
+          closeImageModalDirect();
+        }
+      });
+
+      renderApiList();
+    </script>
+
+    <!-- FLOATING PERSISTENT THEME TOGGLE (BOTTOM-RIGHT) -->
+    <aside class="fixed bottom-6 right-6 z-50">
+      <button
+        id="fab-theme-toggle"
+        onclick="toggleTheme()"
+        title="Toggle Dark / Light Theme"
+        class="flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-2xl backdrop-blur-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-100 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer shadow-indigo-500/10 hover:shadow-indigo-500/25 ring-1 ring-slate-900/5 dark:ring-white/10 group"
+      >
+        <span class="theme-icon text-base transition-transform duration-300 group-hover:rotate-12">🌙</span>
+        <span class="theme-text font-semibold text-xs tracking-wide">Dark Mode</span>
+      </button>
+    </aside>
+
+    <!-- INTERACTIVE DIAGRAM LIGHTBOX / MODAL -->
+    <div
+      id="diagram-modal"
+      class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md items-center justify-center p-4 sm:p-6 transition-opacity duration-300"
+      onclick="closeImageModal(event)"
+    >
+      <div
+        class="relative max-w-6xl w-full bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        onclick="event.stopPropagation()"
+      >
+        <!-- Modal Top Bar -->
+        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-slate-950/80">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="diagram-modal-title" class="font-bold text-sm text-slate-200 font-mono tracking-tight"></span>
+          </div>
+          <div class="flex items-center gap-3">
+            <a
+              id="diagram-modal-download"
+              href="#"
+              target="_blank"
+              class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition flex items-center gap-1.5 border border-slate-700"
+            >
+              <span>↗</span> Open Full Res
+            </a>
+            <button
+              onclick="closeImageModalDirect()"
+              class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center font-bold text-sm transition cursor-pointer"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Image Body with Zoom/Scroll -->
+        <div class="overflow-auto p-3 sm:p-5 flex items-center justify-center bg-slate-950/60 min-h-[300px]">
+          <img
+            id="diagram-modal-img"
+            src=""
+            alt="Expanded Diagram"
+            class="max-w-full h-auto rounded-xl object-contain shadow-2xl transition duration-200"
+          />
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-5 py-2.5 border-t border-slate-800/80 bg-slate-950/80 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Click anywhere outside or press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-slate-300">Esc</kbd> to dismiss</span>
+          <span class="font-mono text-indigo-400">DND Everyday Enterprise Architecture v1.0</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
